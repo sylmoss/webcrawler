@@ -35,7 +35,8 @@ func (c *Crawler) Crawl(url string) {
     if v {
         return
     }
-
+    fmt.Println(url)
+    
     for _, u  := range fetch(url) {
         wg.Add(1)
 
