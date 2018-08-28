@@ -9,19 +9,16 @@ func TestFileBodyToFindLinkTags(t *testing.T) {
     body := buildBody()
     regex := "(?s)<a[ t]+.*?href=\"((/).*?)\".*?>.*?</a>" 
     filter := NewFilter(regex)
-    expectedFilteredTags := buildExpectedFilteredTags()
 
-    filteredTags := filter.FilterString(body)
+    filteredTags := filter.Find(body)
 
-    if len(filteredTags) != len(expectedFilteredTags) {
+    if len(filteredTags) != 6 {
         t.Error("Tags were not right filtered from body html")
     }
 
-    for i := range filteredTags {
-        if filteredTags[i][1] != expectedFilteredTags[i][1] {
-            t.Error("Tags were not right filtered from body html")
-        }
-    }
+    if isAllTagsFiltered(filteredTags) != true {
+        t.Error("Tags were not right filtered from body html")
+    } 
 }
 
 func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
@@ -34,16 +31,13 @@ func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
     t.Fatal(message)
 }
 
-func buildExpectedFilteredTags() [][]string {
-    var tags [][]string
-    tags[0][0] = "<a href=\"/\" class=\"c-header__logo\" title=\"Monzo home page\">Monzo</a> / /"
-    return tags
-    // return [["<a href=\"/\" class=\"c-header__logo\" title=\"Monzo home page\">Monzo</a> / /"], 
-    //         ["<a href=\"/about\" class=\"c-header__link\">About</a> /about /"],
-    //         ["<a href=\"/blog\" class=\"c-header__link\">Blog</a> /blog /"], 
-    //         ["<a href=\"/community\" class=\"c-header__link\">Community</a> /community /"], 
-    //         ["<a href=\"/faq\" class=\"c-header__link\">FAQ</a> /faq /"],
-    //         ["<a class=\"c-header__button\" href=\"/download\">Sign up</a> /download /"]]
+func isAllTagsFiltered(filteredTags [][]string) bool {
+    return (filteredTags[0][1] == "/") &&
+    (filteredTags[1][1] == "/about") &&
+    (filteredTags[2][1] == "/blog") &&
+    (filteredTags[3][1] == "/community") &&
+    (filteredTags[4][1] == "/faq") &&
+    (filteredTags[5][1] == "/download")
 }
 
 func buildBody() string {

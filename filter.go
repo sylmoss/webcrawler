@@ -12,6 +12,6 @@ func NewFilter(regex string) *Filter {
     }
 }
 
-func (f *Filter) FilterString(body string) [][]string {
+func (f *Filter) Find(body string) [][]string {
     return regexp.MustCompile(f.regex).FindAllStringSubmatch(body, -1)
 }

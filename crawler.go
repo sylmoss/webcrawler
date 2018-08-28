@@ -63,8 +63,7 @@ func fetchUrlsFrom(url string) []string {
 
 func extractUrlsFromHtml(Url, body string) []string {
     regex := "(?s)<a[ t]+.*?href=\"((/).*?)\".*?>.*?</a>" 
-    linkTags := NewFilter(regex).FilterString(body)
-    fmt.Println(linkTags)
+    linkTags := NewFilter(regex).Find(body)
     var links []string
     baseUrl, _ := url.Parse(Url)
     if linkTags != nil {
