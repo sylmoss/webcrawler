@@ -4,9 +4,7 @@ import (
     "fmt"
     "net/http" 
     "net/url"
-    "regexp"
     "io/ioutil"
-    "os"
     "sync"
 )
 
@@ -15,7 +13,7 @@ type Crawler struct {
     mux     sync.Mutex
 }
 
-func (c *Crawler) visit(url string) bool {
+func (c *Crawler) isVisited(url string) bool {
     c.mux.Lock()
     defer c.mux.Unlock()
     
@@ -31,60 +29,49 @@ func (c *Crawler) visit(url string) bool {
 func (c *Crawler) Crawl(url string) {
     var wg sync.WaitGroup
 
-    v := c.visit(url)
-    if v {
+    if c.isVisited(url) {
         return
     }
-    fmt.Println(url)
-    
-    for _, u  := range fetch(url) {
-        wg.Add(1)
 
-        go func(u string) {
+    fmt.Println(url)
+
+    for _, childUrl  := range fetchUrlsFrom(url) {
+        wg.Add(1)
+        go func(childUrl string) {
             defer wg.Done()
-            c.Crawl(u)
-        }(u)
+            c.Crawl(childUrl)
+        }(childUrl)
     }
 
     wg.Wait()
     return
 }
 
-func main() {
-    host := os.Args[1]
-    crawler := &Crawler{
-        crawled: make(map[string]bool),
-    }
-    crawler.Crawl(host)
-}
-
-func fetch(url string) []string {
+func fetchUrlsFrom(url string) []string {
     resp, err := http.Get(url) 
-    if err != nil {
-        fmt.Println("not found: %s", url)
-    } else {
+    if err == nil {
         defer resp.Body.Close()
         body, err := ioutil.ReadAll(resp.Body)
 
-        if err != nil {
-            fmt.Println("Read error has occured")
-        } else {
+        if err == nil {
             strBody := string(body)
-            return extractUrls(url, strBody)
+            return extractUrlsFromHtml(url, strBody)
         }
     }
     return nil
 }
 
-func extractUrls(Url, body string) []string {
-    newUrls := regexp.MustCompile("(?s)<a[ t]+.*?href=\"((/).*?)\".*?>.*?</a>").FindAllStringSubmatch(body, -1)
+func extractUrlsFromHtml(Url, body string) []string {
+    regex := "(?s)<a[ t]+.*?href=\"((/).*?)\".*?>.*?</a>" 
+    linkTags := NewFilter(regex).FilterString(body)
+    fmt.Println(linkTags)
     var links []string
     baseUrl, _ := url.Parse(Url)
-    if newUrls != nil {
-        for _, z := range newUrls {
-            ur, err := url.Parse(z[1])
+    if linkTags != nil {
+        for _, z := range linkTags {
+            url, err := url.Parse(z[1])
             if err == nil {
-                links = append(links, baseUrl.ResolveReference(ur).String()) 
+                links = append(links, baseUrl.ResolveReference(url).String()) 
             }
         }
     }
