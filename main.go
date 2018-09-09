@@ -9,5 +9,5 @@ func main() {
         crawled: make(map[string]bool),
     }
 
-    crawler.Crawl(host)
+    crawler.Crawl("->", host)
 }

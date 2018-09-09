@@ -13,7 +13,7 @@ type Crawler struct {
     mux     sync.Mutex
 }
 
-func (c *Crawler) isVisited(url string) bool {
+func (c *Crawler) isCrawled(url string) bool {
     c.mux.Lock()
     defer c.mux.Unlock()
     
@@ -26,20 +26,20 @@ func (c *Crawler) isVisited(url string) bool {
     return false
 }
 
-func (c *Crawler) Crawl(url string) {
+func (c *Crawler) Crawl(tabSpace string, url string) {
     var wg sync.WaitGroup
 
-    if c.isVisited(url) {
+    if c.isCrawled(url) {
         return
     }
 
-    fmt.Println(url)
+    fmt.Println(tabSpace + url)
 
     for _, childUrl  := range fetchUrlsFrom(url) {
         wg.Add(1)
         go func(childUrl string) {
             defer wg.Done()
-            c.Crawl(childUrl)
+            c.Crawl("---" + tabSpace, childUrl)
         }(childUrl)
     }
 
