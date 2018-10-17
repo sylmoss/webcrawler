@@ -1,13 +1,20 @@
 package main
 
-import "os"
+import (
+    "os"
+    "fmt"
+)
 
 func main() {
-    host := os.Args[1]
+    if len(os.Args) < 2 {
+        fmt.Println("Please, provide the host url as an argument.")
+    } else {
+        host := os.Args[1] 
 
-    crawler := &Crawler{
-        crawled: make(map[string]bool),
+        crawler := &Crawler{
+            crawled: make(map[string]bool),
+        }
+
+        crawler.Crawl("->", host)
     }
-
-    crawler.Crawl("->", host)
 }
